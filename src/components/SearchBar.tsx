@@ -51,14 +51,14 @@ export function SearchBar({ onSearch, loading }: SearchBarProps) {
   return (
     <div className="search-bar">
       <label className="fuel-label">
-        Selecciona combustible:
+        ¿Qué combustible necesitas?
         <select
           value={fuelType}
           onChange={e => handleFuelChange(e.target.value as FuelTypeId | '')}
           className="fuel-select"
           disabled={loading}
         >
-          <option value="">Selecciona...</option>
+          <option value="">Selecciona un combustible...</option>
           {FUEL_CATEGORIES.map(cat => (
             <optgroup key={cat.id} label={cat.name}>
               {FUEL_TYPES.filter(f => f.category === cat.id).map(fuel => (
@@ -71,7 +71,7 @@ export function SearchBar({ onSearch, loading }: SearchBarProps) {
         </select>
       </label>
       {error && <p className="search-error">{error}</p>}
-      {loading && <p className="loading-text">Buscando gasolineras...</p>}
+      {loading && <p className="loading-text">Detectando ubicación y buscando...</p>}
     </div>
   );
 }

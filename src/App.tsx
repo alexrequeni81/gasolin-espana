@@ -35,73 +35,98 @@ function App() {
     return [...result, ...others];
   }, [stations, sortedByDistance]);
 
+  const cheapestPrice = stations[0]?.precioBusqueda || '-';
+  const closestDistance = sortedByDistance[0]?.distancia?.toFixed(1) || '-';
+
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Gasolineras España</h1>
-        <p>Encuentra la gasolina más barata cerca de ti</p>
+        <h1>⛽ Gasolineras España</h1>
+        <p>Encuentra el combustible más barato cerca de ti</p>
       </header>
 
       <main className="app-main">
         <SearchBar onSearch={handleSearch} loading={loading} />
 
+        {!loading && !error && stations.length > 0 && (
+          <div className="results-header">
+            <p className="results-count">
+              {stations.length} {stations.length === 1 ? 'gasolinera' : 'gasolineras'} encontradas
+            </p>
+            <div className="results-summary">
+              <span className="summary-item">
+                <span className="summary-dot price"></span>
+                {cheapestPrice} €/L
+              </span>
+              <span className="summary-item">
+                <span className="summary-dot location"></span>
+                {closestDistance} km
+              </span>
+            </div>
+          </div>
+        )}
+
+        {!loading && !error && stations.length > 0 && (
+          <div className="stations-list">
+            {displayedStations.slice(0, visibleCount).map(station => {
+              const isCheapest = station.idEstacion === stations[0]?.idEstacion;
+              const isClosest =
+                station.idEstacion === sortedByDistance[0]?.idEstacion && !isCheapest;
+              return (
+                <GasStationCard
+                  key={station.idEstacion}
+                  station={station}
+                  selectedFuel={selectedFuel}
+                  isCheapest={isCheapest}
+                  isClosest={isClosest}
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {!loading && !error && displayedStations.length > visibleCount && (
+          <button className="show-more-btn" onClick={() => setVisibleCount(prev => prev + 4)}>
+            Ver más ({displayedStations.length - visibleCount} gasolineras)
+          </button>
+        )}
+
         {loading && (
-          <div className="loading">
-            <p>Buscando gasolineras...</p>
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p className="loading-text-full">Buscando gasolineras...</p>
+            <p className="loading-subtext">
+              Detectando tu ubicación y buscando los mejores precios
+            </p>
           </div>
         )}
 
         {error && (
           <div className="error">
-            <p>Error: {error}</p>
+            <p>⚠️ {error}</p>
           </div>
         )}
 
         {!loading && !error && hasSearched && stations.length === 0 && (
           <div className="no-results">
-            <p>No se encontraron gasolineras en esta zona.</p>
+            <span className="welcome-icon">🔍</span>
+            <p>No se encontraron gasolineras en esta zona. Intenta ampliar el radio de búsqueda.</p>
           </div>
         )}
 
-        {!loading && !error && stations.length > 0 && (
-          <div className="results">
-            <p className="results-count">
-              {stations.length} gasolineras • Mejor precio: {stations[0]?.precioBusqueda} €/L • Más
-              cercana: {sortedByDistance[0]?.distancia?.toFixed(1)} km
-            </p>
-            <div className="stations-list">
-              {displayedStations.slice(0, visibleCount).map(station => {
-                const isCheapest = station.idEstacion === stations[0]?.idEstacion;
-                const isClosest =
-                  station.idEstacion === sortedByDistance[0]?.idEstacion && !isCheapest;
-                return (
-                  <GasStationCard
-                    key={station.idEstacion}
-                    station={station}
-                    selectedFuel={selectedFuel}
-                    isCheapest={isCheapest}
-                    isClosest={isClosest}
-                  />
-                );
-              })}
-            </div>
-            {displayedStations.length > visibleCount && (
-              <button className="show-more-btn" onClick={() => setVisibleCount(prev => prev + 4)}>
-                Ver más ({displayedStations.length - visibleCount} restantes)
-              </button>
-            )}
-          </div>
-        )}
-
-        {!hasSearched && (
+        {!hasSearched && !loading && (
           <div className="welcome">
-            <p>Selecciona un tipo de combustible para buscar gasolineras cercanas.</p>
+            <span className="welcome-icon">⛽</span>
+            <p>
+              Selecciona un tipo de combustible para encontrar las gasolineras más cercanas con los
+              mejores precios.
+            </p>
           </div>
         )}
       </main>
 
       <footer className="app-footer">
-        <p>Datos proporcionados por la API de precioil.es</p>
+        <p>Datos oficiales del Ministerio de Energía • Actualizado recientemente</p>
       </footer>
     </div>
   );
