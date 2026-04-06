@@ -3,18 +3,29 @@ export interface GasStation {
   nombreEstacion: string;
   marca: string;
   direccion: string;
+  localidad: string;
+  codPostal: string;
   municipio: string;
   provincia: string;
-  comunidadAutonoma: string;
+  provinciaDistrito: string;
   latitud: string;
   longitud: string;
-  precioGasolina95: string | null;
-  precioGasolina98: string | null;
-  precioDiesel: string | null;
-  precioDieselPlus: string | null;
-  precioGas: string | null;
   horario: string;
-  fechaActualizacion: string;
+  margen: string;
+  tipoVenta: string;
+  Gasolina95: string | null;
+  Gasolina95_media: string | null;
+  Gasolina98: string | null;
+  Gasolina98_media: string | null;
+  Diesel: string | null;
+  Diesel_media: string | null;
+  DieselPremium: string | null;
+  DieselPremium_media: string | null;
+  DieselB_media: string | null;
+  GLP_media: string | null;
+  HVO_media: string | null;
+  lastUpdate: string;
+  distancia?: number;
 }
 
 export interface GasStationDetails extends GasStation {

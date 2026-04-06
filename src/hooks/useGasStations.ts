@@ -1,10 +1,14 @@
 import { useState, useCallback } from 'react';
 import { api } from '../services';
 import type { GasStation } from '../types';
-import { calculateDistance, getCurrentPosition } from '../utils';
+import { getCurrentPosition } from '../utils';
+
+interface GasStationWithDistance extends GasStation {
+  distancia?: number;
+}
 
 interface UseGasStationsResult {
-  stations: GasStation[];
+  stations: GasStationWithDistance[];
   loading: boolean;
   error: string | null;
   searchByLocation: (lat: number, lng: number, radiusKm: number) => Promise<void>;
@@ -13,7 +17,7 @@ interface UseGasStationsResult {
 }
 
 export function useGasStations(): UseGasStationsResult {
-  const [stations, setStations] = useState<GasStation[]>([]);
+  const [stations, setStations] = useState<GasStationWithDistance[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastParams, setLastParams] = useState<{ lat: number; lng: number; radius: number } | null>(
@@ -27,17 +31,7 @@ export function useGasStations(): UseGasStationsResult {
 
     try {
       const data = await api.getStationsByRadius(lat, lng, radiusKm);
-      const stationsWithDistance = data.map(station => ({
-        ...station,
-        distancia: calculateDistance(
-          lat,
-          lng,
-          parseFloat(station.latitud),
-          parseFloat(station.longitud)
-        ),
-      }));
-      stationsWithDistance.sort((a, b) => (a.distancia || 0) - (b.distancia || 0));
-      setStations(stationsWithDistance);
+      setStations(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar gasolineras');
       setStations([]);

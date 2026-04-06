@@ -16,24 +16,24 @@ export function GasStationCard({ station }: GasStationCardProps) {
       </div>
       <p className="station-address">{station.direccion}</p>
       <p className="station-location">
-        {station.municipio}, {station.provincia}
+        {station.localidad}, {station.provincia}
       </p>
       <div className="station-prices">
         <div className="price-item">
           <span className="fuel-type">Gasolina 95</span>
-          <span className="price">{formatPrice(station.precioGasolina95)} €/L</span>
+          <span className="price">{formatPrice(station.Gasolina95)} €/L</span>
         </div>
         <div className="price-item">
           <span className="fuel-type">Gasolina 98</span>
-          <span className="price">{formatPrice(station.precioGasolina98)} €/L</span>
+          <span className="price">{formatPrice(station.Gasolina98)} €/L</span>
         </div>
         <div className="price-item">
           <span className="fuel-type">Diés el</span>
-          <span className="price">{formatPrice(station.precioDiesel)} €/L</span>
+          <span className="price">{formatPrice(station.Diesel)} €/L</span>
         </div>
         <div className="price-item">
-          <span className="fuel-type">Diésel+</span>
-          <span className="price">{formatPrice(station.precioDieselPlus)} €/L</span>
+          <span className="fuel-type">Diés el+</span>
+          <span className="price">{formatPrice(station.DieselPremium)} €/L</span>
         </div>
       </div>
       {station.horario && <p className="station-hours">Horario: {station.horario}</p>}
