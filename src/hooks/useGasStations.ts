@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 import { api } from '../services';
 import type { GasStation, FuelTypeId } from '../types';
-import { getCurrentPosition } from '../utils';
 
 interface GasStationWithDistance extends GasStation {
   distancia?: number;
@@ -12,7 +11,6 @@ interface UseGasStationsResult {
   loading: boolean;
   error: string | null;
   searchByLocation: (lat: number, lng: number, fuelType?: FuelTypeId) => Promise<void>;
-  searchByCurrentLocation: (fuelType?: FuelTypeId) => Promise<void>;
   refresh: () => void;
 }
 
@@ -42,30 +40,11 @@ export function useGasStations(): UseGasStationsResult {
     }
   }, []);
 
-  const searchByCurrentLocation = useCallback(
-    async (fuelType?: FuelTypeId) => {
-      try {
-        const position = await getCurrentPosition();
-        await searchByLocation(position.coords.latitude, position.coords.longitude, fuelType);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error al obtener ubicación');
-      }
-    },
-    [searchByLocation]
-  );
-
   const refresh = useCallback(() => {
     if (lastParams) {
       searchByLocation(lastParams.lat, lastParams.lng, lastParams.fuelType);
     }
   }, [lastParams, searchByLocation]);
 
-  return {
-    stations,
-    loading,
-    error,
-    searchByLocation,
-    searchByCurrentLocation,
-    refresh,
-  };
+  return { stations, loading, error, searchByLocation, refresh };
 }
