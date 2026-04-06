@@ -24,7 +24,7 @@ function App() {
 
         {loading && (
           <div className="loading">
-            <p>Buscando gasolineras...</p>
+            <p>Buscando gasolineras... (Revisa la consola F12 para ver el progreso)</p>
           </div>
         )}
 

@@ -25,27 +25,36 @@ export function useGasStations(): UseGasStationsResult {
   );
 
   const searchByLocation = useCallback(async (lat: number, lng: number, radiusKm: number) => {
+    console.log('[DEBUG] searchByLocation called:', { lat, lng, radiusKm });
     setLoading(true);
     setError(null);
     setLastParams({ lat, lng, radius: radiusKm });
 
     try {
+      console.log('[DEBUG] Calling API...');
       const data = await api.getStationsByRadius(lat, lng, radiusKm);
+      console.log('[DEBUG] API returned stations:', data.length);
+      console.log('[DEBUG] First station:', data[0]);
       setStations(data);
     } catch (err) {
+      console.error('[DEBUG] API Error:', err);
       setError(err instanceof Error ? err.message : 'Error al cargar gasolineras');
       setStations([]);
     } finally {
       setLoading(false);
+      console.log('[DEBUG] Loading finished');
     }
   }, []);
 
   const searchByCurrentLocation = useCallback(
     async (radiusKm: number) => {
+      console.log('[DEBUG] searchByCurrentLocation called');
       try {
         const position = await getCurrentPosition();
+        console.log('[DEBUG] Got position:', position.coords.latitude, position.coords.longitude);
         await searchByLocation(position.coords.latitude, position.coords.longitude, radiusKm);
       } catch (err) {
+        console.error('[DEBUG] Geolocation error:', err);
         setError(err instanceof Error ? err.message : 'Error al obtener ubicación');
       }
     },
