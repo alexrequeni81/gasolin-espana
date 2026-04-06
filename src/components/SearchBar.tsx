@@ -1,61 +1,77 @@
 import { useState, useCallback } from 'react';
 import { getCurrentPosition } from '../utils';
+import { FUEL_TYPES, type FuelTypeId } from '../types';
 
 interface SearchBarProps {
-  onSearch: (lat: number, lng: number, radius: number) => void;
+  onSearch: (lat: number, lng: number, fuelType?: FuelTypeId) => void;
   loading?: boolean;
 }
 
+const FUEL_CATEGORIES = [
+  { id: 'gasolina', name: 'Gasolina' },
+  { id: 'gasoleo', name: 'Gasóleo' },
+  { id: 'gnc', name: 'GNC/GNL' },
+  { id: 'glp', name: 'GLP' },
+  { id: 'otros', name: 'Otros' },
+];
+
 export function SearchBar({ onSearch, loading }: SearchBarProps) {
-  const [radius, setRadius] = useState(5);
+  const [fuelType, setFuelType] = useState<FuelTypeId | ''>('');
   const [error, setError] = useState<string | null>(null);
 
-  const handleCurrentLocation = useCallback(async () => {
-    setError(null);
-    try {
-      const position = await getCurrentPosition();
-      onSearch(position.coords.latitude, position.coords.longitude, radius);
-    } catch (err) {
-      if (err instanceof GeolocationPositionError) {
-        switch (err.code) {
-          case err.PERMISSION_DENIED:
-            setError('Permiso de ubicación denegado. Actívala en tu navegador.');
-            break;
-          case err.POSITION_UNAVAILABLE:
-            setError('Ubicación no disponible.');
-            break;
-          case err.TIMEOUT:
-            setError('Tiempo de espera de ubicación agotado.');
-            break;
-        }
-      } else {
-        setError('Error al obtener ubicación');
+  const handleFuelChange = useCallback(
+    (value: FuelTypeId | '') => {
+      setFuelType(value);
+      if (value) {
+        setError(null);
+        getCurrentPosition()
+          .then(position => onSearch(position.coords.latitude, position.coords.longitude, value))
+          .catch(err => {
+            if (err instanceof GeolocationPositionError) {
+              switch (err.code) {
+                case err.PERMISSION_DENIED:
+                  setError('Permiso de ubicación denegado. Actívala en tu navegador.');
+                  break;
+                case err.POSITION_UNAVAILABLE:
+                  setError('Ubicación no disponible.');
+                  break;
+                case err.TIMEOUT:
+                  setError('Tiempo de espera de ubicación agotado.');
+                  break;
+              }
+            } else {
+              setError('Error al obtener ubicación');
+            }
+          });
       }
-    }
-  }, [onSearch, radius]);
+    },
+    [onSearch]
+  );
 
   return (
     <div className="search-bar">
-      <div className="search-row">
-        <label className="radius-label">
-          Radio de búsqueda:
-          <select
-            value={radius}
-            onChange={e => setRadius(Number(e.target.value))}
-            className="radius-select"
-          >
-            <option value={1}>1 km</option>
-            <option value={2}>2 km</option>
-            <option value={5}>5 km</option>
-            <option value={10}>10 km</option>
-            <option value={20}>20 km</option>
-          </select>
-        </label>
-        <button onClick={handleCurrentLocation} disabled={loading} className="location-btn">
-          {loading ? 'Buscando...' : 'Mi ubicación'}
-        </button>
-      </div>
+      <label className="fuel-label">
+        Selecciona combustible:
+        <select
+          value={fuelType}
+          onChange={e => handleFuelChange(e.target.value as FuelTypeId | '')}
+          className="fuel-select"
+          disabled={loading}
+        >
+          <option value="">Selecciona...</option>
+          {FUEL_CATEGORIES.map(cat => (
+            <optgroup key={cat.id} label={cat.name}>
+              {FUEL_TYPES.filter(f => f.category === cat.id).map(fuel => (
+                <option key={fuel.id} value={fuel.id}>
+                  {fuel.name}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+      </label>
       {error && <p className="search-error">{error}</p>}
+      {loading && <p className="loading-text">Buscando gasolineras...</p>}
     </div>
   );
 }

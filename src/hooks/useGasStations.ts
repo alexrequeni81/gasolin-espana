@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { api } from '../services';
-import type { GasStation } from '../types';
+import type { GasStation, FuelTypeId } from '../types';
 import { getCurrentPosition } from '../utils';
 
 interface GasStationWithDistance extends GasStation {
@@ -11,8 +11,8 @@ interface UseGasStationsResult {
   stations: GasStationWithDistance[];
   loading: boolean;
   error: string | null;
-  searchByLocation: (lat: number, lng: number, radiusKm: number) => Promise<void>;
-  searchByCurrentLocation: (radiusKm: number) => Promise<void>;
+  searchByLocation: (lat: number, lng: number, fuelType?: FuelTypeId) => Promise<void>;
+  searchByCurrentLocation: (fuelType?: FuelTypeId) => Promise<void>;
   refresh: () => void;
 }
 
@@ -20,41 +20,34 @@ export function useGasStations(): UseGasStationsResult {
   const [stations, setStations] = useState<GasStationWithDistance[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lastParams, setLastParams] = useState<{ lat: number; lng: number; radius: number } | null>(
-    null
-  );
+  const [lastParams, setLastParams] = useState<{
+    lat: number;
+    lng: number;
+    fuelType?: FuelTypeId;
+  } | null>(null);
 
-  const searchByLocation = useCallback(async (lat: number, lng: number, radiusKm: number) => {
-    console.log('[DEBUG] searchByLocation called:', { lat, lng, radiusKm });
+  const searchByLocation = useCallback(async (lat: number, lng: number, fuelType?: FuelTypeId) => {
     setLoading(true);
     setError(null);
-    setLastParams({ lat, lng, radius: radiusKm });
+    setLastParams({ lat, lng, fuelType });
 
     try {
-      console.log('[DEBUG] Calling API...');
-      const data = await api.getStationsByRadius(lat, lng, radiusKm);
-      console.log('[DEBUG] API returned stations:', data.length);
-      console.log('[DEBUG] First station:', data[0]);
+      const data = await api.searchWithAutoExpand(lat, lng, fuelType);
       setStations(data);
     } catch (err) {
-      console.error('[DEBUG] API Error:', err);
       setError(err instanceof Error ? err.message : 'Error al cargar gasolineras');
       setStations([]);
     } finally {
       setLoading(false);
-      console.log('[DEBUG] Loading finished');
     }
   }, []);
 
   const searchByCurrentLocation = useCallback(
-    async (radiusKm: number) => {
-      console.log('[DEBUG] searchByCurrentLocation called');
+    async (fuelType?: FuelTypeId) => {
       try {
         const position = await getCurrentPosition();
-        console.log('[DEBUG] Got position:', position.coords.latitude, position.coords.longitude);
-        await searchByLocation(position.coords.latitude, position.coords.longitude, radiusKm);
+        await searchByLocation(position.coords.latitude, position.coords.longitude, fuelType);
       } catch (err) {
-        console.error('[DEBUG] Geolocation error:', err);
         setError(err instanceof Error ? err.message : 'Error al obtener ubicación');
       }
     },
@@ -63,7 +56,7 @@ export function useGasStations(): UseGasStationsResult {
 
   const refresh = useCallback(() => {
     if (lastParams) {
-      searchByLocation(lastParams.lat, lastParams.lng, lastParams.radius);
+      searchByLocation(lastParams.lat, lastParams.lng, lastParams.fuelType);
     }
   }, [lastParams, searchByLocation]);
 

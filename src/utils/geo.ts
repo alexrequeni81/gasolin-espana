@@ -15,7 +15,9 @@ function toRad(deg: number): number {
 
 export function formatPrice(price: string | null): string {
   if (!price) return '-';
-  const num = parseFloat(price);
+  const normalized = price.replace(',', '.');
+  const num = parseFloat(normalized);
+  if (isNaN(num)) return '-';
   return num.toLocaleString('es-ES', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
 }
 
