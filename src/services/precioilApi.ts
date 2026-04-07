@@ -308,6 +308,13 @@ class FuelApi {
       }
     }
     console.log('[API] Stations to filter:', stations.length);
+    console.log('[API] Sample stations around 46185:');
+    const near46185 = stations
+      .filter(s => s.codPostal && (s.codPostal === '46185' || s.codPostal.startsWith('461')))
+      .slice(0, 5);
+    near46185.forEach(s =>
+      console.log('  -', s.nombreEstacion, 'CP:', s.codPostal, 'Localidad:', s.localidad)
+    );
 
     for (const radius of RADII) {
       let filtered = stations
